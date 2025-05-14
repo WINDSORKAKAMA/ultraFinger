@@ -94,13 +94,11 @@ extern "C"{
     /* Change / Set the sensor's handshaking password */
     extern void passwordSet(uint8_t new_password[4]);
 
-
     /* Change either the baud rate, security level or packet length (Basic System Parameters) */
     extern void systemBasicParameterSet(uint8_t parameter_number, uint8_t new_parameter);
 
     /* Read the current system parameter values into the system_parameter_store section of the fingerprint_module variable */
     extern void systemParameterRead();
-
 
     /* Turn the UART port on the sensor on/off */
     extern void controlUARTPort(uint8_t port_state);
