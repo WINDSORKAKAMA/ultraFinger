@@ -131,10 +131,10 @@
       mySerial->write(txPacket.start_code & 0x00FF);
 
       // Transfer the address with the high byte first and low byte last
-      mySerial->write(txPacket.address[0);
-      mySerial->write(txPacket.address[1);
-      mySerial->write(txPacket.address[2);
-      mySerial->write(txPacket.address[3);
+      mySerial->write(txPacket.address[0]);
+      mySerial->write(txPacket.address[1]);
+      mySerial->write(txPacket.address[2]);
+      mySerial->write(txPacket.address[3]);
 
       // Transfer the packet ID 
       mySerial->write(txPacket.type);  
@@ -172,7 +172,7 @@
       // assign the next 4 bytes as the address
       rxPacket.address[0] = mySerial->read();
       rxPacket.address[1] = mySerial->read();
-      rxPacket.address[2] = mySerial->read);
+      rxPacket.address[2] = mySerial->read();
       rxPacket.address[3] = mySerial->read();
       
       // assign the next byte as the type of packet
