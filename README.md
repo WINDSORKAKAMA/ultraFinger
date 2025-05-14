@@ -1,23 +1,11 @@
-Find a way how to differenciate HardwareSerial and SoftwareSerial using C++
-****************************************************************************
+    This is the ultraFinger Library. It is an alternative to the Adafruit Fingerprint Library designed by your's truly.
 
+    
+    This project was designed to make arduino fingerprint sensor programming more accessible to non-C++-like languages 
+    by offerring a C-like implementation in the source flie, C-compatible functions as well as a C-friendly header file. 
+    
 
-    You can create pointers to either a HardwareSerial object or SoftwareSerial
+    My style of implementation was somewhat inspired by the minimalist implementation of the R30X-Fingerprint-Sensor-Library. 
+Go to this site for more information on the R30X-Fingerprint-Sensor-Library: 
 
-object depending on whether the hardware avialable has multiple or one pair of 
-
-UART ports respectively.
-
-
-    You then create a pointer to a Serial object and write the address of either 
-
-the HardwareSerial or SoftwareSerial pointer to it.
-
-    Afterword, write to the Serial port to send data
-
-
-    To receive data, check if there is available data and receive it
-
-
-For More Info : 
 https://www.circuitstate.com/libraries/r307-optical-fingerprint-scanner-library-for-arduino-documentation/
