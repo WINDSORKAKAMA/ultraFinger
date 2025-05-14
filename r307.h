@@ -50,10 +50,10 @@ typedef enum{
 }EnumPortState;
 
 typedef enum{
-    // capture time can be any 8-bit value
-    FINGERPRINT_CAPTURE_TIME_1 = 0X20,                  // about 4.5s
-    FINGERPRINT_CAPTURE_TIME_2 = 0X25,                  // about 5.5s
-    FINGERPRINT_CAPTURE_TIME_3 = 0X30,                  // about 6.5s
+    /* capture time can be any 8-bit value but these are the reference values */
+    FINGERPRINT_CAPTURE_TIME_REFERENCE_1 = 0X20,                  // about 4.5s
+    FINGERPRINT_CAPTURE_TIME_REFERENCE_2 = 0X25,                  // about 5.5s
+    FINGERPRINT_CAPTURE_TIME_REFERENCE_3 = 0X30,                  // about 6.5s
 }EnumFingerprintVerify;
 
 // forward declaration of SoftwareSerial
@@ -62,8 +62,8 @@ typedef struct SoftwareSerial SoftwareSerial;
 // global pointer to the SoftwareSerial object used by user
 extern SoftwareSerial *mySerial;
 
-// global variable, fingerprint_module with fields containing the current system parameter values that can be changed by the different functions
-extern struct Fingerprint_Helper_t{
+// return type of systemParameterRead(): information on the current values of the system parameters
+typedef struct Fingerprint_Helper_t{
     uint8_t module_password[4];
   
     union SystemParameter{
@@ -82,11 +82,11 @@ extern struct Fingerprint_Helper_t{
         }align[16];
 
     }system_parameter_store;
-}fingerprint_module;
+}Fingerprint_Helper_t;
 
 extern "C"{
     /* Sets the baud rate of the computer */
-    extern void setBaud(int initializer);
+    extern void setBaud();
 
     /* Verify the sensor's handshaking password */
     extern void passwordVerify(uint8_t password[4]);
@@ -97,8 +97,8 @@ extern "C"{
     /* Change either the baud rate, security level or packet length (Basic System Parameters) */
     extern void systemBasicParameterSet(uint8_t parameter_number, uint8_t new_parameter);
 
-    /* Read the current system parameter values into the system_parameter_store section of the fingerprint_module variable */
-    extern void systemParameterRead();
+    /* Read the the current system parameter values */
+    extern Fingerprint_Helper_t systemParameterRead();
 
     /* Turn the UART port on the sensor on / off */
     extern void controlUARTPort(uint8_t port_state);
@@ -108,6 +108,12 @@ extern "C"{
 
     /* Set the device address value */
     extern void setModuleAddress(uint8_t new_address[4]);
+
+    /* Match captured fingerprint with fingerprint library and return the result */
+    extern void fingerprintVerify(uint8_t capture_time, uint16_t start_bit_number, uint16_t search_quantity, uint16_t(*result)[2]);
+    
+    /* Collect fingerprint, match with the fingerprint library and return the result */    
+    extern void fingerprintAutoVerify(uint16_t(*result)[2]);
 
     /* Read a valid template number */
     extern uint16_t templateNumberRead();    

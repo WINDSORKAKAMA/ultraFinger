@@ -10,21 +10,6 @@
   #include <string.h>
   #include <stdbool.h>
 
-  // default values for the fingerprint module system parameters 
-  fingerprint_module = {
-        {0xFF, 0XFF, 0XFF, 0XFF},
-        {
-            0x0000,
-            0x0009,
-            1000,
-            FINGERPRINT_SECURITY_LEVEL_5,
-            {0XFF, 0XFF, 0XFF, 0XFF},
-            FINGERPRINT_PACKET_LENGTH_64_BYTE,
-            FINGERPRINT_BAUDRATE_57600
-        } 
-    };
-
-
   // struct to create UART-bourne packets
   struct Fingerprint_Packet_t{
     uint16_t start_code;          // "Wakeup" code for packet detection
@@ -35,10 +20,8 @@
     uint16_t sum;                 // Equal to (type + length + data contents)
   };
 
-
   // starting value of a packet, assigned to start_code
   #define FINGERPRINT_HEADER 0XEF01
-
 
   // values indicating different packet types
   typedef enum{
@@ -48,53 +31,67 @@
     FINGERPRINT_PACKET_IDENTIFIER_END          = 0X8                   // End packet
   }EnumPacketIdentifier;
 
+  // values for the different confirmation codes in the acknowledge packets
+  typedef enum{
+      FINGERPRINT_DATA_CONFIRMATION_SUCCESS = 0X0,       // Command execution is complete
+      FINGERPRINT_DATA_CONFIRMATION_DATA_PACKAGE_RECEIVE_ERROR = 0X1,   //! Error when receiving data package
+      FINGERPRINT_DATA_CONFIRMATION_NO_FINGER = 0X2,                    //! No finger on the sensor
+      FINGERPRINT_DATA_CONFIRMATION_ENROLL_FINGER_FAIL = 0X3,           //! Failed to enroll the finger
+      FINGERPRINT_DATA_CONFIRMATION_IMAGE_DISORDERLY = 0X6,             //! Failed to generate character file due to overly disorderly
+                                                                        //! fingerprint image
+      FINGERPRINT_DATA_CONFIRMATION_FEATURE_FAIL = 0X7,                 //!Failed to generate character file due to the lack of character point
+                                                                        //! or small fingerprint image
+      FINGERPRINT_DATA_CONFIRMATION_NO_MATCH = 0X8,                     //! Finger doesn't match
+      FINGERPRINT_DATA_CONFIRMATION_SEARCH_FAIL = 0X9,                  //! Failed to find matching finger
+      FINGERPRINT_DATA_CONFIRMATION_ENROLL_MISMATCH = 0x0A,
+      FINGERPRINT_DATA_CONFIRMATION_BAD_LOCATION = 0x0B,
+      FINGERPRINT_DATA_CONFIRMATION_DB_RANGE_FAIL = 0x0C,               //! Error when reading template from library or invalid template
+      FINGERPRINT_DATA_CONFIRMATION_UPLOAD_FEATURE_FAIL = 0x0D,         //! Error when uploading template
+      FINGERPRINT_DATA_CONFIRMATION_PACKET_RESPONSE_FAIL = 0x0E,        //! Module failed to receive the following data packages
+      FINGERPRINT_DATA_CONFIRMATION_TEMPLATE_UPLOAD_FAIL = 0x0F,        //! Error when uploading image
+      FINGERPRINT_DATA_CONFIRMATION_DELETEFAIL = 0x10,                  //! Failed to delete the template
+      FINGERPRINT_DATA_CONFIRMATION_DB_CLEAR_FAIL = 0x11,               //! Failed to clear finger library
+      FINGERPRINT_DATA_CONFIRMATION_WRONG_PASSWORD = 0x13,              //! Find whether the fingerprint passed or failed
+      FINGERPRINT_DATA_CONFIRMATION_INVALID_IMAGE = 0x15,               //! Failed to generate image because of lac of valid primary image
+      FINGERPRINT_DATA_CONFIRMATION_FLASH_ERRORR = 0x18,                //! Error when writing flash
+      FINGERPRINT_DATA_CONFIRMATION_INVALID_REGISTER_NO = 0X1A,          //! Invalid register number
+      FINGERPRINT_DATA_CONFIRMATION_PORT_COMMUNICATION_FAILURE = 0X1D    //! Invalid register number
+  }EnumDataConfirmation;
 
-    // values for the different confirmation codes in the acknowledge packets
-    typedef enum{
-        FINGERPRINT_DATA_CONFIRMATION_SUCCESS = 0X0,       // Command execution is complete
-
-        FINGERPRINT_DATA_CONFIRMATION_DATA_PACKAGE_RECEIVE_ERROR = 0X1,   //! Error when receiving data package
-        FINGERPRINT_DATA_CONFIRMATION_NO_FINGER = 0X2,                    //! No finger on the sensor
-        FINGERPRINT_DATA_CONFIRMATION_ENROLL_FINGER_FAIL = 0X3,           //! Failed to enroll the finger
-
-        FINGERPRINT_DATA_CONFIRMATION_IMAGE_DISORDERLY = 0X6,             //! Failed to generate character file due to overly disorderly
-                                                                          //! fingerprint image
-
-        FINGERPRINT_DATA_CONFIRMATION_FEATURE_FAIL = 0X7,                 //!Failed to generate character file due to the lack of character point
-                                                                          //! or small fingerprint image
-
-        FINGERPRINT_DATA_CONFIRMATION_NO_MATCH = 0X8,                     //! Finger doesn't match
-        FINGERPRINT_DATA_CONFIRMATION_SEARCH_FAIL = 0X9,                  //! Failed to find matching finger
-        FINGERPRINT_DATA_CONFIRMATION_ENROLL_MISMATCH = 0x0A,
-        FINGERPRINT_DATA_CONFIRMATION_BAD_LOCATION = 0x0B,
-        FINGERPRINT_DATA_CONFIRMATION_DB_RANGE_FAIL = 0x0C,               //! Error when reading template from library or invalid template
-        FINGERPRINT_DATA_CONFIRMATION_UPLOAD_FEATURE_FAIL = 0x0D,         //! Error when uploading template
-        FINGERPRINT_DATA_CONFIRMATION_PACKET_RESPONSE_FAIL = 0x0E,        //! Module failed to receive the following data packages
-        FINGERPRINT_DATA_CONFIRMATION_TEMPLATE_UPLOAD_FAIL = 0x0F,        //! Error when uploading image
-        FINGERPRINT_DATA_CONFIRMATION_DELETEFAIL = 0x10,                  //! Failed to delete the template
-        FINGERPRINT_DATA_CONFIRMATION_DB_CLEAR_FAIL = 0x11,               //! Failed to clear finger library
-        FINGERPRINT_DATA_CONFIRMATION_WRONG_PASSWORD = 0x13,              //! Find whether the fingerprint passed or failed
-        FINGERPRINT_DATA_CONFIRMATION_INVALID_IMAGE = 0x15,               //! Failed to generate image because of lac of valid primary image
-        FINGERPRINT_DATA_CONFIRMATION_FLASH_ERRORR = 0x18,                //! Error when writing flash
-        FINGERPRINT_DATA_CONFIRMATION_INVALID_REGISTER_NO = 0X1A,          //! Invalid register number
-        FINGERPRINT_DATA_CONFIRMATION_PORT_COMMUNICATION_FAILURE = 0X1D    //! Invalid register number
-    }EnumDataConfirmation;
+  /* 
+  fingerprint_module stores the different system parameter values that can be updated or read by the different functions. 
+  
+  in this translation unit only, hence preventing the user from changing critical data such as the module address.
+  
+  It is assigned the default values initially (as below)
+  */
+  static Fingerprint_Helper_t fingerprint_module = {
+      {0xFF, 0XFF, 0XFF, 0XFF},
+      {
+          0x0000,
+          0x0009,
+          1000,
+          FINGERPRINT_SECURITY_LEVEL_5,
+          {0XFF, 0XFF, 0XFF, 0XFF},
+          FINGERPRINT_PACKET_LENGTH_64_BYTE,
+          FINGERPRINT_BAUDRATE_57600
+      } 
+  };
 
   // default value of mySerial is 0
   mySerial = NULL; 
 
   /* if mySerial == NULL, tell the user to assign a Serial object address to mySerial and return control back to the calling function */
   #define checkAddressZero() \
-    if((mySerial) == NULL)   \
+    if(mySerial == NULL){ \
       Serial.println("Error! Assign the address of a Serial Object to mySerial\n"); \
-      return
-
+      return;
+    }
 
   // size of an acknowledge packet with 1 byte of data
   #define FINGERPRINT_PACKET_SIZE_MINIMUM sizeof(struct Fingerprint_Packet_t) - (sizeof(uint8_t*) + sizeof(uint8_t))
 
-
-    /* for functions sending a command packet and receiving an acknowlege packet only */
+    /* // For functions sending a command packet and receiving an acknowlege packet only */
     #define RECEIVE_ACK_PACKET(packet_type, data_length, data_pointer) \
       /* Send the command packet */\
       packetSend(packet_type, data_length, data_pointer); \
@@ -102,15 +99,16 @@
       struct Fingerprint_Packet_t packet = packetReceive()
     
 
-  extern "C"{
+  extern "C"{    
     void setBaud(){
       mySerial->begin(fingerprint_module.system_parameter_store.baud_setting * FINGERPRINT_BAUD_RATE_BASE);
     }
 
     /* Sends UART-bourne packet to the sensor */
     static void packetSend(uint8_t packet_type, uint16_t data_length, uint8_t* data){
-      // do nothing if mySerial == NULL
-      checkAddressZero();
+      /* do nothing if mySerial == NULL
+         DO NOT add a SEMICOLON at the end */
+      checkAddressZero()
       
       // construct packet to be trasmitted
       struct Fingerprint_Packet_t txPacket = {
@@ -154,8 +152,9 @@
     
     /* Receives UART-bourne packet from the sensor */
     static struct Fingerprint_Packet_t packetReceive(){
-      // do nothing if mySerial == NULL
-      checkAddressZero();
+      /* do nothing if mySerial == NULL
+         DO NOT add a SEMICOLON at the end */
+      checkAddressZero()
   
       // wait until the packet sent is big enough to be read
       while (mySerial->available() < FINGERPRINT_PACKET_SIZE_MINIMUM){
@@ -203,7 +202,9 @@
       FINGERPRINT_COMMAND_UART_PORT_CONTROL = 0X17, 
       FINGERPRINT_COMMAND_GET_RANDOM_CODE = 0X14,
       FINGERPRINT_COMMAND_SET_MODULE_ADDRESS = 0X15,
-      FINGERPRINT_COMMAND_READ_VALID_TEMPLATE_NUM = 0X1D 
+      FINGERPRINT_COMMAND_READ_VALID_TEMPLATE_NUM = 0X1D, 
+      FINGERPRINT_COMMAND_FINGERPRINT_VERIFY = 0X32,
+      FINGERPRINT_COMMAND_FINGERPRINT_AUTO_VERIFY = 0X34
     }EnumCommandCodes;
 
     // Send output to the terminal depending on the confirmation code received
@@ -216,29 +217,45 @@
   
       switch(data_code){
         case FINGERPRINT_DATA_CONFIRMATION_DATA_PACKAGE_RECEIVE_ERROR:
-          Serial.println("Error! Sensor Did Not Properly Receive Package\n");
+          Serial.println("Error! Sensor Did Not Properly Receive Package.\n");
           break;  
           return 0;
   
         case FINGERPRINT_DATA_CONFIRMATION_PORT_COMMUNICATION_FAILURE:
-          Serial.println("Error! UART Port Communication Failure\n");
+          Serial.println("Error! UART Port Communication Failure.\n");
           break;  
           return 0;
 
         case FINGERPRINT_DATA_CONFIRMATION_SUCCESS:
           strcat(buffer, keywords);
           strcat(buffer, "\n");
-          Serial.println(buffer);
+          while(*buffer)
+            Serial.println(buffer++);
           break; 
           return 1;
 
+        case FINGERPRINT_DATA_CONFIRMATION_IMAGE_DISORDERLY: 
+          Serial.println("Error! Fingerprint Is Overly Diorderly.\n");
+          break;
+          return 0;
+
+        case FINGERPRINT_DATA_CONFIRMATION_FEATURE_FAIL:
+          Serial.println("Error! Inufficient Fingerprint Data Collected.\n");
+          break;
+          return 0;
+
+        case FINGERPRINT_DATA_CONFIRMATION_SEARCH_FAIL: 
+          Serial.println("Error! Fingerprint Does Not Match.\n");
+          break;
+          return 0;
+
         case FINGERPRINT_DATA_CONFIRMATION_INVALID_REGISTER_NO: 
-          Serial.println("Error! Wrong Register Number Inputted\n");
+          Serial.println("Error! Wrong Register Number Inputted.\n");
           break;
           return 0;
 
         default:
-          Serial.println("Error! Unusual Behaivior\n");
+          Serial.println("Error! Unusual Behaivior.\n");
           return 0;
       }
     }  
@@ -334,7 +351,7 @@
       handleReceivedData(*packet.data, "Port Operation Complete.");
     }
 
-    void systemParameterRead(){
+    struct Fingerprint_Helper_t systemParameterRead(){
       // The 1 byte is for the instruction code
       uint8_t data = FINGERPRINT_COMMAND_SYSTEM_PARAMETER_READ;
 
@@ -356,6 +373,7 @@
         print_module.system_parameter_store.data_packet_size = ((uint16_t)packet.data[12] << 8) | packet.data[13];
         fingerprint_module.system_parameter_store.baud_setting = ((uint16_t)packet.data[14] << 8) | packet.data[15];
       }
+      return fingerprint_module;
     }
 
     uint16_t templateNumberRead(){
@@ -371,14 +389,15 @@
         return ((uint16_t)packet.data[1] << 8) | packet.data [2];
     }
 
-    void fingerprintVerify(uint8_t capture_time, uint16_t start_bit_number, uint16_t search_quantity){
+    void fingerprintVerify(uint8_t capture_time, uint16_t start_bit_number,
+                          uint16_t search_quantity, uint16_t (*result)[2]){
       /* The 1st byte is the instruction code 
         2nd byte is for capture_time
         3rd and 4th byte for start_bit_number
         last 2 bytes are for search_quantity
       */
       uint8_t data[6] = {
-                          FINGERPRINT_COMMAND_GET_RANDOM_CODE,
+                          FINGERPRINT_COMMAND_FINGERPRINT_VERIFY,
                           capture_time,
                           start_bit_number & 0XFF00,
                           start_bit_number & 0X00FF,
@@ -387,10 +406,38 @@
                         };
 
       // get the acknowledge packet
-      RECEIVE_ACK_PACKET(FINGERPRINT_PACKET_IDENTIFIER_COMMAND, sizeof(data), &data);
+      RECEIVE_ACK_PACKET(FINGERPRINT_COMMAND_FINGERPRINT_VERIFY, sizeof(data), &data);
 
-      // handle the data
-      handleReceivedData(*packet.data, "Number Generation Success.");
+      // return the received data back to the user 
+      if(handleReceivedData(*packet.data, "Fingerprint Read Complete.")){
+        result = uint8_t result_buff[4];
+                              
+        result[0] = (uint16_t)packet.data[1] << 8;
+        result[0] = packet.data[2];
+
+        result[1] = (uint16_t)packet.data[3] << 8;
+        result[1] = packet.data[4];
+      }
+    }
+
+    void fingerprintAutoVerify(uint16_t(*result)[2]){
+      // The 1 byte is the instruction code 
+
+      uint8_t data = FINGERPRINT_COMMAND_FINGERPRINT_AUTO_VERIFY;
+
+      // get the acknowledge packet
+      RECEIVE_ACK_PACKET(FINGERPRINT_COMMAND_FINGERPRINT_VERIFY, sizeof(data), &data);
+
+      // return the received data back to the user 
+      if(handleReceivedData(*packet.data, "Fingerprint Read Complete.")){
+        result = uint8_t result_buff[4];
+                              
+        result[0] = (uint16_t)packet.data[1] << 8;
+        result[0] = packet.data[2];
+
+        result[1] = (uint16_t)packet.data[3] << 8;
+        result[1] = packet.data[4];
+      }
     }
 
     uint32_t generateRandomCode(){
@@ -424,7 +471,7 @@ controlUARTPort(); *
 
 
 fingerprintVerify(); *
-fingerprintAutoVerify();
+fingerprintAutoVerify(); *
 
 imageCollect();
 imageUpload();
