@@ -100,7 +100,7 @@ extern "C"{
     /* Read the current system parameter values into the system_parameter_store section of the fingerprint_module variable */
     extern void systemParameterRead();
 
-    /* Turn the UART port on the sensor on/off */
+    /* Turn the UART port on the sensor on / off */
     extern void controlUARTPort(uint8_t port_state);
 
     /* Generate a random number from the sensor and return it to the computer */
