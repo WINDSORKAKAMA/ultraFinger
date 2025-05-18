@@ -115,6 +115,9 @@ extern "C"{
     /* Collect fingerprint, match with the fingerprint library and return the result */    
     extern void fingerprintAutoVerify(uint16_t(*result)[2]);
 
+    /* To upload an image from the image buffer to the upper computer */
+    void imageUpload(uint8_t* result);
+
     /* Read a valid template number */
     extern uint16_t templateNumberRead();    
 };
