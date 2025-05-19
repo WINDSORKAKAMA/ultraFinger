@@ -50,6 +50,11 @@ typedef enum{
 }EnumPortState;
 
 typedef enum{
+    FINGERPRINT_CHAR_BUFFER_1 = 0X1,                    // ID for Character Buffer 1
+    FINGERPRINT_CHAR_BUFFER_2 = 0X2                     // ID for Character Buffer 2
+}EnumBufferID
+
+typedef enum{
     /* capture time can be any 8-bit value but these are the reference values */
     FINGERPRINT_CAPTURE_TIME_REFERENCE_1 = 0X20,                  // about 4.5s
     FINGERPRINT_CAPTURE_TIME_REFERENCE_2 = 0X25,                  // about 5.5s
@@ -85,7 +90,7 @@ typedef struct Fingerprint_Helper_t{
 }Fingerprint_Helper_t;
 
 extern "C"{
-    /* Sets the baud rate of the computer */
+    /* Sets the baud rate of the upper computer */
     extern void setBaud();
 
     /* Verify the sensor's handshaking password */
@@ -100,14 +105,11 @@ extern "C"{
     /* Read the the current system parameter values */
     extern Fingerprint_Helper_t systemParameterRead();
 
-    /* Turn the UART port on the sensor on / off */
-    extern void controlUARTPort(uint8_t port_state);
-
-    /* Generate a random number from the sensor and return it to the computer */
-    extern uint32_t generateRandomCode();
-
     /* Set the device address value */
     extern void setModuleAddress(uint8_t new_address[4]);
+
+    /* Turn the UART port on the sensor on / off */
+    extern void controlUARTPort(uint8_t port_state);
 
     /* Match captured fingerprint with fingerprint library and return the result */
     extern void fingerprintVerify(uint8_t capture_time, uint16_t start_bit_number, uint16_t search_quantity, uint16_t(*result)[2]);
@@ -115,14 +117,32 @@ extern "C"{
     /* Collect fingerprint, match with the fingerprint library and return the result */    
     extern void fingerprintAutoVerify(uint16_t(*result)[2]);
 
-    /* To upload an image from the image buffer to the upper computer */
-    extern void imageUpload(uint8_t* result);
+    /* To upload(send) an image from the image buffer to the upper computer */
+    extern void imageSend(uint8_t* result, uint16_t* data_size);
 
-    /* To download an image from the upper computer to the image buffer */
-    extern void imageDownload(uint8_t* result);
+    /* To download(receive) an image from the upper computer to the image buffer */
+    extern void imageReceive(uint8_t* result, uint16_t* data_size);
+
+    /* Generate character file from the original finger image in the image buffer and store it in either character buffer 1 or 2 */
+    extern void imageToCharFile(uint8_t buff_number); 
+
+    /* To upload(send) character file or template from the specified character buffer to the upper computer */
+    extern void characterFileSend(uint8_t buff_number, uint16_t* data_size, uint8_t* result);
+
+    /* To download(receive) character file or template from the upper computer to the specified character buffer */
+    extern void characterFileReceive(uint8_t buff_number, uint16_t* data_size, uint8_t* result);
 
     /* Read a valid template number */
-    extern uint16_t templateNumberRead();    
+    extern uint16_t templateNumberRead();   
+
+    /* Generate a template from character files in the character buffers */
+    extern void templateGenerate();
+
+    /* Store the template of the specified buffer in the designated location of the flash library */
+    extern void templateStore(uint8_t buffer_number, uint16_t pageID);
+
+    /* Generate a random number from the sensor and return it to the computer */
+    extern uint32_t generateRandomCode();
 };
 
 #endif
