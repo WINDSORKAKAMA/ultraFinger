@@ -1,0 +1,87 @@
+Find a way how to differenciate HardwareSerial and SoftwareSerial using C++
+****************************************************************************
+
+
+    You can create pointers to either a HardwareSerial object or SoftwareSerial
+
+object depending on whether the hardware avialable has multiple or one pair of 
+
+UART ports respectively.
+
+
+    You then create a pointer to a Serial object and write the address of either 
+
+the HardwareSerial or SoftwareSerial pointer to it.
+
+    Afterword, write to the Serial port to send data
+
+
+    To receive data, check if there is available data and receive it
+
+
+For More Info : 
+https://www.circuitstate.com/libraries/r307-optical-fingerprint-scanner-library-for-arduino-documentation/
+
+
+** imageSend() **
+
+** This is a function that sends a 73KB fingerprint image in chuncks **
+
+implementation of imageSend() :
+
+void imageSend(uint8_t* input_image, uint32_t image_size) {
+      // The 1 byte is the instruction code
+      uint8_t data = FINGERPRINT_COMMAND_DOWNLOAD_IMAGE;
+
+      // Get the acknowledge packet
+      RECEIVE_ACK_PACKET(FINGERPRINT_PACKET_IDENTIFIER_COMMAND, sizeof(data), &data);
+
+      // Check if the sensor is ready to receive the image
+      if (handleReceivedData(*ack_packet.data, "Ready to Transfer the Following Data Packet.")) {
+        uint16_t buff_size = 0;
+
+        if (image_size == 0){
+          Serial.println("Error! Image or Image Size Is too Small.\n");
+          return;
+        }
+
+        else if (image_size <= 64)
+          buff_size = 64;
+        
+        else if (image_size <= 128)
+          buff_size = 128;
+        
+         // For image sizes greater than or equal to 128
+        else
+          buff_size = 256;
+        
+        // Create the buffer
+        uint8_t data_buff[buff_size];
+        
+        // Initialize the buffer to 0
+        memset(data_buff, 0, buff_size);
+        
+        // Either acknowledge or data packet 
+        uint8_t packet_type;
+
+        // Size of the chunk to be sent
+        uint16_t chunk_size_to_be_sent;
+        // Send the image in chunks of the determined buff_size
+        for (uint32_t i = 0; i < image_size; i += buff_size) {
+            // Determine the actual size of chunk_size_to_be_sent
+            chunk_size_to_be_sent = (i + buff_size > image_size) ? image_size-i : buff_size;
+        
+            // Copy the current chunk of the image into the buffer
+            memcpy(data_buff, input_image + i, buff_size);
+
+            if(chunk_size_to_be_sent < buff_size)
+              memcpy(data_buff, input_image + i , chunk_size_to_be_sent);
+        
+            // Inform the sensor if this is the last packet
+            packet_type = (i + chunk_size_to_be_sent >= image_size) ? FINGERPRINT_PACKET_IDENTIFIER_END : FINGERPRINT_PACKET_IDENTIFIER_DATA;
+        
+            // Send the data in chunk(s) of either 32, 64, 128 or 256 byte sizes 
+            packetSend(packet_type, buff_size, data_buff);
+        }
+      }
+    }
