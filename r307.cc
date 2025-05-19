@@ -233,7 +233,7 @@
           Serial.println("Error! Sensor Failed to Upload the Data Package.\n");  
           return 0;
 
-        case FINGERPRINT_DATA_CONFIRMATION_DOWNLOAD_DATA_PACKAGE_RECEIVE_ERROR:
+        case FINGERPRINT_DATA_CONFIRMATION_DOWNLOAD_IMAGE_DATA_PACKET_TRANSFER_FAIL:
           Serial.println("Error! Sensor Failed to Download the Data Package.\n");
           return 0;
   
