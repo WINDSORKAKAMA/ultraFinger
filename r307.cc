@@ -115,39 +115,39 @@
         FINGERPRINT_HEADER, 
         {0xFF, 0xFF, 0xFF, 0xFF}, 
         packet_type,
-        data_length + sizeof(txack_Packet.sum),
+        data_length + sizeof(txPacket.sum),
         data,
         packet_type + data_length
       };
 
       // final value of sum
       for (int i = 0; i < data_length; i++)
-        txack_Packet.sum += *(data + i);
+        txPacket.sum += *(data + i);
 
       // Transfer the header value with the high byte first
-      mySerial->write(txack_Packet.start_code & 0xFF00);
-      mySerial->write(txack_Packet.start_code & 0x00FF);
+      mySerial->write(txPacket.start_code & 0xFF00);
+      mySerial->write(txPacket.start_code & 0x00FF);
 
       // Transfer the address with the high byte first and low byte last
-      mySerial->write(txack_Packet.address[0]);
-      mySerial->write(txack_Packet.address[1]);
-      mySerial->write(txack_Packet.address[2]);
-      mySerial->write(txack_Packet.address[3]);
+      mySerial->write(txPacket.address[0]);
+      mySerial->write(txPacket.address[1]);
+      mySerial->write(txPacket.address[2]);
+      mySerial->write(txPacket.address[3]);
 
       // Transfer the packet ID 
-      mySerial->write(txack_Packet.type);  
+      mySerial->write(txPacket.type);  
 
       // Transfer the package length with the high byte first
-      mySerial->write(txack_Packet.length & 0xFF00);
-      mySerial->write(txack_Packet.length & 0x00FF);
+      mySerial->write(txPacket.length & 0xFF00);
+      mySerial->write(txPacket.length & 0x00FF);
 
       // Transfer the data; not sure if it is the high byte first so I assumed low byte first
       for(int i = 0; i < data_length; i++)
-        mySerial->write(txack_Packet.data[i]);
+        mySerial->write(txPacket.data[i]);
 
       // Transfer the sum with the high byte first
-      mySerial->write(txack_Packet.sum & 0xFF00);
-      mySerial->write(txack_Packet.sum & 0x00FF);
+      mySerial->write(txPacket.sum & 0xFF00);
+      mySerial->write(txPacket.sum & 0x00FF);
     }
     
     /* Receives UART-bourne packet from the sensor */
@@ -166,30 +166,30 @@
       struct Fingerprint_Packet_t rxPacket;
       
       // assign the first 2 bytes as the start code
-      rxack_Packet.start_code = (((uint16_t)mySerial->read() << 8) | (uint16_t)mySerial->read());
+      rxPacket_Packet.start_code = (((uint16_t)mySerial->read() << 8) | (uint16_t)mySerial->read());
       
       // assign the next 4 bytes as the address
-      rxack_Packet.address[0] = mySerial->read();
-      rxack_Packet.address[1] = mySerial->read();
-      rxack_Packet.address[2] = mySerial->read();
-      rxack_Packet.address[3] = mySerial->read();
+      rxPacket.address[0] = mySerial->read();
+      rxPacket.address[1] = mySerial->read();
+      rxPacket.address[2] = mySerial->read();
+      rxPacket.address[3] = mySerial->read();
       
       // assign the next byte as the type of packet
-      rxack_Packet.type = mySerial->read();
+      rxPacket.type = mySerial->read();
       
       // assign the next 2 bytes as the length
-      rxack_Packet.length = (((uint16_t)mySerial->read() << 8) | (uint16_t)mySerial->read());
+      rxPacket.length = (((uint16_t)mySerial->read() << 8) | (uint16_t)mySerial->read());
       
       // data_buffer stores the data received
-      static uint8_t data_buffer[rxack_Packet.length - sizeof(rxack_Packet.sum)]; 
-      rxack_Packet.data = data_buffer;
+      static uint8_t data_buffer[rxPacket.length - sizeof(rxPacket.sum)]; 
+      rxPacket.data = data_buffer;
       
-      // assign the next no. of bytes = length of the data = txack_Packet.length - sizeof(txack_Packet.sum) to data_buffer
-      for(int i = 0; i < rxack_Packet.length - sizeof(rxack_Packet.sum); i++)
-        *(rxack_Packet.data + i) = mySerial->read();
+      // assign the next no. of bytes = length of the data = txPacket.length - sizeof(txPacket.sum) to data_buffer
+      for(int i = 0; i < rxPacket.length - sizeof(rxPacket.sum); i++)
+        *(rxPacket.data + i) = mySerial->read();
       
       // assign the last 2 bytes as the sum
-      rxack_Packet.sum = (((uint16_t)mySerial->read() << 8) | (uint16_t)mySerial->read());
+      rxPacket.sum = (((uint16_t)mySerial->read() << 8) | (uint16_t)mySerial->read());
       
       return rxPacket;
     }
