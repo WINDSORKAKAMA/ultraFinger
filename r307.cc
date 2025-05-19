@@ -47,7 +47,7 @@
       FINGERPRINT_DATA_CONFIRMATION_BAD_LOCATION = 0x0B,                  
       FINGERPRINT_DATA_CONFIRMATION_DB_RANGE_FAIL = 0x0C,                                 //! Error when reading template from library or invalid template
       FINGERPRINT_DATA_CONFIRMATION_UPLOAD_FEATURE_FAIL = 0x0D,                           //! Error when uploading template
-      FINGERPRINT_DATA_CONFIRMATION_PACKET_RESPONSE_FAIL = 0x0E,                          //! Module failed to receive the following data package
+      FINGERPRINT_DATA_CONFIRMATION_DOWNLOAD_IMAGE_DATA_PACKET_TRANSFER_FAIL  = 0x0E,     //! Module failed to receive the following data package
       FINGERPRINT_DATA_CONFIRMATION_UPLOAD_IMAGE_DATA_PACKET_TRANSFER_FAIL = 0x0F,        //! Error when uploading image
       FINGERPRINT_DATA_CONFIRMATION_DELETEFAIL = 0x10,                                    //! Failed to delete the template
       FINGERPRINT_DATA_CONFIRMATION_DB_CLEAR_FAIL = 0x11,                                 //! Failed to clear finger library
@@ -231,6 +231,10 @@
 
         case FINGERPRINT_DATA_CONFIRMATION_UPLOAD_IMAGE_DATA_PACKET_TRANSFER_FAIL:
           Serial.println("Error! Sensor Failed to Upload the Data Package.\n");  
+          return 0;
+
+        case FINGERPRINT_DATA_CONFIRMATION_DOWNLOAD_DATA_PACKAGE_RECEIVE_ERROR:
+          Serial.println("Error! Sensor Failed to Download the Data Package.\n");
           return 0;
   
         case FINGERPRINT_DATA_CONFIRMATION_PORT_COMMUNICATION_FAILURE:
@@ -458,7 +462,7 @@
       handleReceivedData(*ack_packet.data, "Finger Collection Success.");
     }
 
-    // For functions receiving a data packet after sending the command packet and receiving an acknowledge packet
+    // For functions sending a command packet and receiving an acknowledge packet followed by a data packet 
     #define RECEIVE_DATA_PACKET(packet_type, data_length, data_pointer, keywords) \
       RECEIVE_ACK_PACKET(packet_type, data_length, data_pointer); \
       \
@@ -471,15 +475,7 @@
       uint8_t data = FINGERPRINT_COMMAND_UPLOAD_IMAGE;
       
       // get the acknowledge and data packets and handle the data as well
-      RECEIVE_DATA_PACKET(FINGERPRINT_PACKET_IDENTIFIER_COMMAND, sizeof(data), &data);
-    }
-
-    void imageUpload(uint8_t* result){
-      // The 1 byte is the instruction code
-      uint8_t data = FINGERPRINT_COMMAND_UPLOAD_IMAGE;
-      
-      // get the acknowledge and data packets and handle the data as well
-      RECEIVE_DATA_PACKET(FINGERPRINT_PACKET_IDENTIFIER_COMMAND, sizeof(data), &data);
+      RECEIVE_DATA_PACKET(FINGERPRINT_PACKET_IDENTIFIER_COMMAND, sizeof(data), &data, "Ready to Transfer the Data Packet.");
     
       // get resultant image
       static uint8_t data[data_packet.length - sizeof(uint8_t)];
@@ -488,12 +484,12 @@
         *(result + i) = *(data_packet.data + i);
     }
 
-    void imageUpload(uint8_t* result){
+    void imageDownload(uint8_t* result){
       // The 1 byte is the instruction code
       uint8_t data = FINGERPRINT_COMMAND_DOWNLOAD_IMAGE;
       
       // get the acknowledge and data packets and handle the data as well
-      RECEIVE_DATA_PACKET(FINGERPRINT_PACKET_IDENTIFIER_COMMAND, sizeof(data), &data);
+      RECEIVE_DATA_PACKET(FINGERPRINT_PACKET_IDENTIFIER_COMMAND, sizeof(data), &data, "Ready to Transfer the Data Packet.");
       
       // get resultant image
       static uint8_t data[data_packet.length - sizeof(uint8_t)];

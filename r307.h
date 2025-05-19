@@ -2,7 +2,7 @@
 #define R307
 
 #include "Arduino.h"
-#include <SoftwareSerial.h>
+#include SoftwareSerial.h>
 
 
 typedef enum{
@@ -116,7 +116,10 @@ extern "C"{
     extern void fingerprintAutoVerify(uint16_t(*result)[2]);
 
     /* To upload an image from the image buffer to the upper computer */
-    void imageUpload(uint8_t* result);
+    extern void imageUpload(uint8_t* result);
+
+    /* To download an image from the upper computer to the image buffer */
+    extern void imageDownload(uint8_t* result);
 
     /* Read a valid template number */
     extern uint16_t templateNumberRead();    
