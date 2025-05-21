@@ -681,7 +681,7 @@
       memset(data, data_buff + 2, sizeof(data) - sizeof(data[0])- sizeof(data[1]));
 
       // get the acknowledge packet
-      RECEIVE_ACK_PACKET(FINGERPRINT_PACKET_IDENTIFIER_COMMAND, sizeof(data), &data) 
+      RECEIVE_ACK_PACKET(FINGERPRINT_PACKET_IDENTIFIER_COMMAND, sizeof(data_buff), &data_buff) 
        
       // handle the data received
       handleReceivedData(*ack_packet.data, "Write Success."); 
@@ -689,9 +689,10 @@
 
     void notepadRead(uint8_t page_num, uint8_t(*return_data)[32]){
       // The 1st byte is the instruction code, 2nd is page_num, last 32 are for the data
-      uint8_t data_buff[34];
-      data_buff[0] =  FINGERPRINT_COMMAND_READ_FROM_NOTEPAD;
-      data_buff[1] = page_num;
+      uint8_t data[] = {
+                          FINGERPRINT_COMMAND_READ_FROM_NOTEPAD,
+                          page_num
+                       };
 
       // get the acknowledge packet
       RECEIVE_ACK_PACKET(FINGERPRINT_PACKET_IDENTIFIER_COMMAND, sizeof(data), &data) 
