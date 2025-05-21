@@ -1,4 +1,4 @@
-// #ifdef INCLUDE
+#ifdef INCLUDE
   #define INCLUDE
   #include "ultraFinger.h"
 
