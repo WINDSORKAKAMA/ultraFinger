@@ -1,4 +1,4 @@
-#ifdef INCLUDE
+//#ifdef INCLUDE
   #define INCLUDE
   #include "ultraFinger.h"
 
@@ -606,7 +606,7 @@
                        };
 
       // get the acknowledge packet
-      RECEIVE_ACK_PACKET(FINGERPRINT_PACKET_IDENTIFIER_COMMAND, sizeof(data), &data)
+      RECEIVE_ACK_PACKET(FINGERPRINT_PACKET_IDENTIFIER_COMMAND, sizeof(data), &data);
       
       // handle the data received
       handleReceivedData(*ack_packet.data, "Template Read Success.");
@@ -621,7 +621,7 @@
                         };
        
        // get the acknowledge packet
-       RECEIVE_ACK_PACKET(FINGERPRINT_PACKET_IDENTIFIER_COMMAND, sizeof(data), &data) 
+       RECEIVE_ACK_PACKET(FINGERPRINT_PACKET_IDENTIFIER_COMMAND, sizeof(data), &data); 
        
        // handle the data received
        handleReceivedData(*ack_packet.data, "Template Deletion Success."); 
@@ -631,7 +631,7 @@
       uint8_t data[] = FINGERPRINT_COMMAND_EMPTY_FINGER_LIBRARY;
        
       // get the acknowledge packet
-      RECEIVE_ACK_PACKET(FINGERPRINT_PACKET_IDENTIFIER_COMMAND, sizeof(data), &data) 
+      RECEIVE_ACK_PACKET(FINGERPRINT_PACKET_IDENTIFIER_COMMAND, sizeof(data), &data); 
        
       // handle the data received
       handleReceivedData(*ack_packet.data, "Emptied Fingerprint Library Successfully."); 
@@ -642,7 +642,7 @@
       uint8_t data = FINGERPRINT_COMMAND_MATCH_TWO_TEMPLATES;
        
       // get the acknowledge packet
-      RECEIVE_ACK_PACKET(FINGERPRINT_PACKET_IDENTIFIER_COMMAND, sizeof(data), &data) 
+      RECEIVE_ACK_PACKET(FINGERPRINT_PACKET_IDENTIFIER_COMMAND, sizeof(data), &data); 
        
       // handle the data received
       handleReceivedData(*ack_packet.data, "Templates of the Two Buffers Are Matching."); 
@@ -681,7 +681,7 @@
       memset(data, data_buff + 2, sizeof(data) - sizeof(data[0])- sizeof(data[1]));
 
       // get the acknowledge packet
-      RECEIVE_ACK_PACKET(FINGERPRINT_PACKET_IDENTIFIER_COMMAND, sizeof(data_buff), &data_buff) 
+      RECEIVE_ACK_PACKET(FINGERPRINT_PACKET_IDENTIFIER_COMMAND, sizeof(data_buff), &data_buff); 
        
       // handle the data received
       handleReceivedData(*ack_packet.data, "Write Success."); 
@@ -695,7 +695,7 @@
                        };
 
       // get the acknowledge packet
-      RECEIVE_ACK_PACKET(FINGERPRINT_PACKET_IDENTIFIER_COMMAND, sizeof(data), &data) 
+      RECEIVE_ACK_PACKET(FINGERPRINT_PACKET_IDENTIFIER_COMMAND, sizeof(data), &data); 
        
       // handle the data received
       if(handleReceivedData(*ack_packet.data, "Read Success.")){
