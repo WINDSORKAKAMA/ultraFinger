@@ -1,111 +1,58 @@
 <p align="center">
-    <img src="img/title.jpg" alt="ZealFS title" />
+    <img src="images/fingerprint.png" alt="ultraFinger title" />
 </p>
-<p align="center">
-    <a href="https://opensource.org/licenses/Apache-2.0">
-        <img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg" alt="Licence" />
-    </a>
-    <p align="center">An alternative r307 fingerprint library implementation for Arduino</p>
+    <p align="center">An alternative r307 Fingerprint library for Arduino</p>
 </p>
 
-## Yet another file system?
+## Yet another Fingerprint Library?
 
-If you follow my work, you may be aware that I am developing a Z80-based 8-bit computer entirely from scratch: from PCB to software. It integrates an I2C EEPROM socket that can accommodate any compatible chip, usually ranging from 2KB to 128KB. As such, they are smaller than floppy disks or other flash memories. Moreover, the operating system running on it, Zeal 8-bit OS, is based around disks, files and directories, I was looking for a file system with a low storage overhead and simple enough to be implemented in Z80 assembly.
+In 2024, I decided to make my own fingerprint sensor library out of frustration due to working with the poorly documented Adafruit Fingerprint Library while working on a cashless transaction module at the 
+time. 
+that
+Later, I decided to revisit the idea to create it ain a re-usable manner to allow it to be used in other applications.
 
-That excluded all FAT12, FAT16, as well as other modern alternatives (FAT32, exFAT, NTFS, Ext2/3/4, etc...)
+For example, I made the decision to write this library in "C-like C++", specifically a blend between C99 and C89 code. 
 
-Other custom smaller FAT alternatives I could find online had their own limitations, such as the absence of directories.
+Since C is cross compatible with virtually any language, and this library exposes the basic fucntionality for working with this sensor, you can,
+for example, write a smart door system that uses a database interfaces and with a Python ORM to query fingerprints using a custom API that uses this library to read / write fingerprint templates / character files / bitmap images to the fingerprint sensor.
 
-This is why ZealFS is here!
+I also made the decision to use only the SoftwareSerial library for UART communication. This was done for 2 reasons:
+
+* To ensure that the HardwareSerial ports(0 and 1) are reserved for debugging.
+* To ensure cross compatibility as all microcontollers supporting SoftwareSerial can carry out UART communication with the sensor using any port.
 
 ## Features
 
-Here is a non-exhaustive list of the current features:
+Here is a list of the current features:
 
-* Features files and directories, no limit in depth.
-* Total storage size up to 64KB.
-* Names up to 16 characters.
-* Date in BCD format.
-* The only limit of file size is the storage itself.
-* Small overhead thanks to 256-byte pages, making the smallest entity, dir or file, 256 bytes big.
-* Up to 8 entries per directory*.
-* Room for future extensions.
-* Concise implementation: around 1.3KB in Z80 assembly (Zeal 8-bit OS), less than 1000 lines of C using FUSE.
+* A container for the system parameter values.
+* Debugging information conveyed to the terminal.
+* Verifying the module password.
+* Changing the module password.
+* Reading compressed images from the Image Buffer.
+* Reading templates from the Character Buffer.
+* Writing templates to the Character Buffer.
+* Reading templates to from the Notepad.
+* Writing templates to the Notepad.
+* Reading system parameter values.
+* Modifying system parameter values.
+* Random Number Generation.
+* Comparing two templates
+* Searching for a template
+* Getting template ID's
 
-*: Limited to 6 for the root directory.
-
-## Compilation and usage
-
-This repository contains an implementation of ZealFS for Linux, in the form of a FUSE implementation. [More info about FUSE on their project page](https://github.com/libfuse/libfuse). It was tested on Ubuntu 22.04 LTS.
 
 ### Dependencies
 
-In order to use the example you will need:
+In order to use the library you will need:
 
-* make
-* libfuse3-dev
-* gcc (or any other compatible C compiler)
+* Arduino IDE
+* SoftwareSerial library 
 
-For example, on Ubuntu, you can install the main dependencies with:
-
-```
-sudo apt install libfuse3-dev make
-```
-
-if you're on debian, run:
-
-```
-sudo apt install fuse3 libfuse3-dev make pkg-config
-```
-
-### Compilation
-
-To compile the project, type:
-
-```
-make
-```
-
-Upon success, a new binary is created named `zealfs` by default.
-
-### Usage
-
-In order to use the file system, you will need a disk image and a mount point. If you don't have any, no worries, the binary will create one. By default, the program will name it `zfs.img` and give it a size of 32KB. You can override these parameters, with options `--image` and `--size` respectively. For example, you can use:
-
-```
-./zealfs --image=my_disk.img --size=64 my_mount_dir
-```
-
-This will create a new disk image named `my_disk.img` of size 64KB and mounted in the directory `my_mount_dir` present in the current folder. The binary should show:
-
-```
-$ mkdir my_mount_dir
-$ ./zealfs --image=my_disk.img --size=64 my_mount_dir
-Info: using disk image my_disk.img
-$
-```
-
-The binary is then running in background, the content of the disk image can be populated or checked either through the terminal or with a GUI file explorer, just like regular file systems.
-
-You can get all the possible parameters by using command:
-
-```
-./zealfs --help
-```
-
-### Unmounting the disk image
-
-After using the disk image, you must unmount it thanks to the command:
-
-```
-umount my_mount_dir
-```
-
-**Unmounting is very important, as it will flush all the data written to the virtual disk into the actual image file!**
 
 ## Implementation details
 
-### Pages
+### Functions
 
 The file system is based around virtual pages. No matter how big the storage is, it will be virtually split into 256-byte pages. As such, a memory of size N KB will have `N*1024/256` virtual pages.
 
