@@ -1,6 +1,7 @@
 //#ifdef INCLUDE
   #define INCLUDE
   #include "ultraFinger.h"
+  #include <stdlib.h>
 
   // The values indicating different packet types
   typedef enum{
@@ -159,7 +160,7 @@
         txPacket.sum += *(data + i);
 
       // Transfer the header value with the high byte first
-      mySerial->write(txPacket.start_code & 0xFF00);
+      mySerial->write((txPacket.start_code & 0xFF00) >> 8);
       mySerial->write(txPacket.start_code & 0x00FF);
 
       // Transfer the address with the high byte first and low byte last
@@ -172,7 +173,7 @@
       mySerial->write(txPacket.type);  
 
       // Transfer the package length with the high byte first
-      mySerial->write(txPacket.length & 0xFF00);
+      mySerial->write((txPacket.length & 0xFF00) >> 8);
       mySerial->write(txPacket.length & 0x00FF);
 
       // Transfer the data; not sure if it is the high byte first so I assumed low byte first
@@ -180,7 +181,7 @@
         mySerial->write(txPacket.data[i]);
 
       // Transfer the sum with the high byte first
-      mySerial->write(txPacket.sum & 0xFF00);
+      mySerial->write((txPacket.sum & 0xFF00) >> 8);
       mySerial->write(txPacket.sum & 0x00FF);
     }
     
@@ -214,9 +215,8 @@
       // assign the next 2 bytes as the length
       rxPacket.length = (((uint16_t)mySerial->read() << 8) | (uint16_t)mySerial->read());
       
-      // data_buffer stores the data received
-      static uint8_t data_buffer[rxPacket.length - sizeof(rxPacket.sum)]; 
-      rxPacket.data = data_buffer;
+      // Store the data received on the heap
+      rxPacket.data = malloc(rxPacket.length - sizeof(rxPacket.sum));
       
       // assign the next no. of bytes = length of the data = txPacket.length - sizeof(txPacket.sum) to data_buffer
       for(int i = 0; i < rxPacket.length - sizeof(rxPacket.sum); i++)
@@ -226,6 +226,12 @@
       rxPacket.sum = (((uint16_t)mySerial->read() << 8) | (uint16_t)mySerial->read());
       
       return rxPacket;
+    }
+
+    // free the data on the heap placed by packetReceive()
+    static void dealloc(struct Fingerprint_Packet_t* ptr){
+      free(ptr->data);
+      return;
     }
 
     // Send output to the terminal depending on the confirmation code received
@@ -341,6 +347,9 @@
 
       // handle the data received in the acknowledge packet
       handleReceivedData(*ack_packet.data, "Correct Password.");
+      
+      // return the data containing heap - array to the adruino
+      dealloc(&ack_packet);
     }
     
     void passwordSet(uint8_t new_password[4]){
@@ -363,6 +372,9 @@
         fingerprint_module.module_password[2] = new_password[2];
         fingerprint_module.module_password[3] = new_password[3];
       }  
+                  
+      // return the data containing heap - array to the adruino
+      dealloc(&ack_packet);
     }
 
     void setModuleAddress(uint8_t new_address[4]){
@@ -373,7 +385,7 @@
                           new_address[1],
                           new_address[2],
                           new_address[3]
-                        }
+                        };
 
       // get the acknowledge packet
       RECEIVE_ACK_PACKET(FINGERPRINT_PACKET_IDENTIFIER_COMMAND, sizeof(data), &data);
@@ -385,6 +397,9 @@
         fingerprint_module.system_parameter_store.device_address[2] = new_address[2];
         fingerprint_module.system_parameter_store.device_address[3] = new_address[3];
       }
+                  
+      // return the data containing heap - array to the adruino
+      dealloc(&ack_packet);
     }
 
     void systemBasicParameterSet(uint8_t parameter_number, uint8_t new_parameter){
@@ -401,6 +416,9 @@
       // handle the data received in the acknowledge packet
       if(handleReceivedData(*ack_packet.data, "Parameter Setting Complete."))
         fingerprint_module.system_parameter_store.data_packet_size = new_parameter; 
+            
+      // return the data containing heap - array to the adruino
+      dealloc(&ack_packet);
     }
 
     void controlUARTPort(uint8_t port_state){
@@ -415,6 +433,9 @@
       
       // handle the data received
       handleReceivedData(*ack_packet.data, "Port Operation Complete.");
+      
+      // return the data containing heap - array to the adruino
+      dealloc(&ack_packet);
     }
 
     struct Fingerprint_Helper_t systemParameterRead(){
@@ -439,6 +460,10 @@
         print_module.system_parameter_store.data_packet_size = ((uint16_t)ack_packet.data[12] << 8) | ack_packet.data[13];
         fingerprint_module.system_parameter_store.baud_setting = ((uint16_t)ack_packet.data[14] << 8) | ack_packet.data[15];
       }
+            
+      // return the data containing heap - array to the adruino
+      dealloc(&ack_packet);
+
       return fingerprint_module;
     }
 
@@ -451,8 +476,10 @@
 
       // return the template if it was generated
       if(handleReceivedData(*ack_packet.data, "Number Generation Success."))
-        // return the template number
         return ((uint16_t)ack_packet.data[1] << 8) | ack_packet.data [2];
+
+      // return the data containing heap - array to the adruino
+      dealloc(&ack_packet);
     }
 
     void fingerprintVerify(uint8_t capture_time, uint16_t start_bit_number,
@@ -484,6 +511,9 @@
         result[1] = (uint16_t)ack_packet.data[3] << 8;
         result[1] |= ack_packet.data[4];
       }
+
+      // return the data containing heap - array to the adruino
+      dealloc(&ack_packet);
     }
 
     void fingerprintAutoVerify(uint16_t(*result)[2]){
@@ -497,11 +527,13 @@
       if(handleReceivedData(*ack_packet.data, "Fingerprint Read Complete.")){
         uint8_t result_buff[4];
         result = result_buff;
-        
                               
         result[0] = (uint16_t)ack_packet.data[1] << 8 | ack_packet.data[2];
         result[1] = (uint16_t)ack_packet.data[3] << 8 | ack_packet.data[4];
       }
+
+      // return the data containing heap - array to the adruino
+      dealloc(&ack_packet);
     }
 
     void imageCollect(){
@@ -513,6 +545,9 @@
 
       // handle the data received
       handleReceivedData(*ack_packet.data, "Finger Collection Success.");
+
+      // return the data containing heap - array to the adruino
+      dealloc(&ack_packet);
     }
 
     void imageReceive(uint8_t* image, uint16_t* image_size){
@@ -539,6 +574,9 @@
 
       // handle the data received
       handleReceivedData(*ack_packet.data, "Character file generated.");
+
+      // return the data containing heap - array to the adruino
+      dealloc(&ack_packet.data);    
     }
 
     void templateGenerate(){
@@ -550,6 +588,9 @@
 
       // handle the data received
       handleReceivedData(*ack_packet.data, "Template generated.");
+
+      // return the data containing heap - array to the adruino
+      dealloc(&ack_packet);
     }
 
     void characterFileReceive(uint8_t buffer_number, uint16_t* data_size, uint8_t* result){
@@ -565,6 +606,9 @@
       // get the address and size of the resultant image
       result = data_packet.data;
       *data_size = data_packet.length - sizeof(uint16_t);
+
+      // return the data containing heap - array to the adruino
+      dealloc(&ack_packet);
     }
 
     void characterFileSend(uint8_t buffer_number, uint16_t* data_size, uint8_t* result){
@@ -580,6 +624,9 @@
       // get the address and size of the resultant image
       result = data_packet.data;
       *data_size = data_packet.length - sizeof(uint16_t);
+
+      // return the data containing heap - array to the adruino
+      dealloc(&ack_packet.data);    
     }
 
      void templateStore(uint8_t buffer_number, uint16_t pageID){
@@ -595,6 +642,9 @@
 
       // handle the data received
       handleReceivedData(*ack_packet.data, "Storage Success.");
+
+      // return the data containing heap - array to the adruino
+      dealloc(&ack_packet.data);
      }
 
     void templateRead(uint8_t buff_number, uint16_t pageID){
@@ -610,6 +660,9 @@
       
       // handle the data received
       handleReceivedData(*ack_packet.data, "Template Read Success.");
+
+      // return the data containing heap - array to the adruino
+      dealloc(&ack_packet);
     }
 
     void templateDelete(uint8_t pageID, uint16_t n_templates){
@@ -620,11 +673,14 @@
                           n_templates
                         };
        
-       // get the acknowledge packet
-       RECEIVE_ACK_PACKET(FINGERPRINT_PACKET_IDENTIFIER_COMMAND, sizeof(data), &data); 
+      // get the acknowledge packet
+      RECEIVE_ACK_PACKET(FINGERPRINT_PACKET_IDENTIFIER_COMMAND, sizeof(data), &data); 
        
-       // handle the data received
-       handleReceivedData(*ack_packet.data, "Template Deletion Success."); 
+      // handle the data received
+      handleReceivedData(*ack_packet.data, "Template Deletion Success."); 
+
+      // return the data containing heap - array to the adruino
+      dealloc(&ack_packta);
     }
     void fingerLibraryEmpty(){
       // The 1 byte is the instruction code
@@ -635,6 +691,9 @@
        
       // handle the data received
       handleReceivedData(*ack_packet.data, "Emptied Fingerprint Library Successfully."); 
+    
+      // return the data containing heap - array to the adruino
+      dealloc(&ack_packet.data);
     }
 
     void templateMatch(){
@@ -646,6 +705,9 @@
        
       // handle the data received
       handleReceivedData(*ack_packet.data, "Templates of the Two Buffers Are Matching."); 
+    
+      // return the data containing heap - array to the adruino
+      dealloc(&ack_packet);
     }
     
     void fingerLibrarySearch(uint8_t buffer_number, uint16_t start_address, uint16_t page_num){.
@@ -657,6 +719,9 @@
        
       // handle the data received
       handleReceivedData(*ack_packet.data, "The Templates in the Two Buffers Are Matching."); 
+    
+      // return the data containing heap - array to the adruino
+      dealloc(&ack_packet);
     }
 
     uint32_t generateRandomCode(){
@@ -667,9 +732,20 @@
       RECEIVE_ACK_PACKET(FINGERPRINT_PACKET_IDENTIFIER_COMMAND, sizeof(data), &data);
 
       // return the number if it was generated
-      if (handleReceivedData(*ack_packet.data, "Number Generation Success."))
+      if (handleReceivedData(*ack_packet.data, "Number Generation Success.")){
+        // store the random number
+        uint32_t store = (uint32_t)ack_packet.data[1] << 24 | (uint32_t)(ack_packet.data[2] << 16) | (uint32_t)ack_packet.data[3] << 8 | ack_packet.data[4];
+        
+        // return the data containing heap - array to the adruino
+        dealloc(&ack_packet);
+        
         // return the random number
-        return (uint32_t)ack_packet.data[1] << 24 | (uint32_t)(ack_packet.data[2] << 16) | (uint32_t)ack_packet.data[3] << 8 | ack_packet.data[4];
+        return store;
+      }
+
+      // return the data containing heap - array to the adruino
+      dealloc(&ack_packet);
+      return 0;
     }
 
     void notepadWrite(uint8_t page_num, uint8_t(*data)[32]){
@@ -678,13 +754,16 @@
       data_buff[0] =  FINGERPRINT_COMMAND_WRITE_TO_NOTEPAD;
       data_buff[1] = page_num;
       
-      memset(data, data_buff + 2, sizeof(data) - sizeof(data[0])- sizeof(data[1]));
+      memset(data, data_buff + 2, sizeof(data) - sizeof(data[0]) - sizeof(data[1]));
 
       // get the acknowledge packet
       RECEIVE_ACK_PACKET(FINGERPRINT_PACKET_IDENTIFIER_COMMAND, sizeof(data_buff), &data_buff); 
        
       // handle the data received
       handleReceivedData(*ack_packet.data, "Write Success."); 
+
+      // return the data containing heap - array to the adruino
+      dealloc(&ack_packet.data);
     }
 
     void notepadRead(uint8_t page_num, uint8_t(*return_data)[32]){
@@ -702,6 +781,9 @@
         return_data = ack_packet.data;
       }
 
+      // return the data containing heap - array to the adruino
+      dealloc(&ack_packet.data);
     }
+
   };  
 #endif
