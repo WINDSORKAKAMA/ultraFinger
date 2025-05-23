@@ -1,7 +1,17 @@
-//#ifdef INCLUDE
+/*
+ * ultraFinger – R307 Fingerprint Sensor Library
+ * 
+ * Copyright (c) 2025 John Terry
+ * Licensed under the BSD 3-Clause License.
+ * 
+ * See the LICENSE file for full terms.
+ */
+
+#ifdef INCLUDE  
   #define INCLUDE
   #include "ultraFinger.h"
   #include <stdlib.h>
+  #include <string.h>
 
   // The values indicating different packet types
   typedef enum{
@@ -45,9 +55,9 @@
   }EnumCommandCodes;
 
     /* 
-    *** Different confirmation codes in the different acknowledge packets.  ***
+    *** Different confirmation codes in the different acknowledge packets. ***
 
-    A confirmation code is the first byte of an acknowledge packet.
+      A confirmation code is the first byte of an acknowledge packet.
   */
   typedef enum{
     FINGERPRINT_DATA_CONFIRMATION_SUCCESS = 0X0,
