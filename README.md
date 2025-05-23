@@ -61,7 +61,7 @@ In order to use the library you will need:
 
 Below is how an image is converted into a template and some of the r307 sensor's specs. 
 
-* The fingerprint sensor captures a fingerprint, called an image, from the user. This image is a bitmap imaage that is 73728 bytes big.
+* The fingerprint sensor captures a fingerprint, called an image, from the user. This image is a bitmap imaage that is 73,728 bytes big.
 * The bitmap image is placed in the image buffer which is an array in its RAM. Here, it can be compressed into a character file of size 256 bytes.
 * A character buffer in the sensor's RAM can be used to store character files or template files. There are two character buffers, each of size 512 bytes.
 * Character files can be joined together to make a template file, of size 512 bytes, which is the final "version" of an image. This can be stored in the non-volatile flash memory.
