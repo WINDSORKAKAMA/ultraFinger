@@ -52,7 +52,7 @@ Here is a list of the current features:
 In order to use the library you will need:
 
 * Arduino IDE
-* SoftwareSerial library 
+* SoftwareSerial library
 
 
 ## Implementation details
@@ -61,8 +61,8 @@ In order to use the library you will need:
 
 Below is how an image is converted into a template and some of the r307 sensor's specs. 
 
-* The fingerprint sensor captures a fingerprint, called an image, from the user. This image is a bitmap imaage that is 73,728 bytes big.
-* The bitmap image is placed in the image buffer which is an array in its RAM. Here, it can be compressed into a character file of size 256 bytes.
+* The fingerprint sensor captures a fingerprint, called an image, from the user. This image is a bitmap image that is 73,728 bytes big.
+* The bitmap image is placed in the image buffer which is an array in the sensor's RAM. Here, it can be compressed into a character file of size 256 bytes.
 * A character buffer in the sensor's RAM can be used to store character files or template files. There are two character buffers, each of size 512 bytes.
 * Character files can be joined together to make a template file, of size 512 bytes, which is the final "version" of an image. This can be stored in the non-volatile flash memory.
 * The non-volatile flash memory can hold up to 1000 templates.
@@ -71,7 +71,7 @@ Visit the manuals in the "manuals" directory for more information on the r307 sp
 
 ### Communication Details
 
-Stuff sent to or from the sensor is in form of a packet. Fundametally, all the functions send and receive packets.
+Stuff sent to or from the sensor is in form of a packet. Fundametally, all that the functions do is sending and receiving packets.
 
 * When the desired function is called, it sends a packet called a Command packet. Command packets contain a unique command telling the sensor to caryy out a specific action.
 * Afterword, the sensor sends a packet, called an Acknowledge packet. These contain a confirmation code and most contain some extra data which may be expected by the user.
@@ -130,7 +130,7 @@ Collects fingerprint, matches it with the fingerprint library and returns the re
 ```C
 extern void imageReceive(uint8_t* output_image, uint16_t* image_size)
 ```
-Receives an image from the image buffer, puts its address in *image and its size in image_size (uploads an image) 
+Receives an image from the image buffer, puts its address in output_image and its the address to a variable stored in image_size whose value will be size (uploads an image) 
 
 ```C
 extern void imageToCharFile(uint8_t buff_number) 
