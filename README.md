@@ -8,22 +8,23 @@
     <p align="center">An alternative r307 Fingerprint library for Arduino</p>
 </p>
 
+
 ## Yet another Fingerprint Library?
 
 In 2024, I decided to make my own fingerprint sensor library out of frustration due to working with the poorly documented Adafruit Fingerprint Library while working on a cashless transaction module at the 
 time. 
-that
-Later, I decided to revisit the idea to create it ain a re-usable manner to allow it to be used in other applications.
+Later, I decided to revisit the idea to create it in a re-usable manner allowing it to be used in many applications.
 
-For example, I made the decision to write this library in "C-like C++", specifically a blend between C99 and C89 code. 
+I made the decision to write this library in "C-like C++", specifically a blend between C99 and C89 code. 
 
 Since C is cross compatible with virtually any language, and this library exposes the basic fucntionality for working with this sensor, you can,
-for example, write a smart door system that uses a database interfaces and with a Python ORM to query fingerprints using a custom API that uses this library to read / write fingerprint templates / character files / bitmap images to the fingerprint sensor.
+for example, write a smart door system that uses a database interface with a Python ORM to query fingerprints using a custom API that uses this library to read / write fingerprint templates / character files / bitmap images to the fingerprint sensor.
 
 I also made the decision to use only the SoftwareSerial library for UART communication. This was done for 2 reasons:
 
 * To ensure that the HardwareSerial ports(0 and 1) are reserved for debugging.
 * To ensure cross compatibility as all microcontollers supporting SoftwareSerial can carry out UART communication with the sensor using any port.
+
 
 ## Features
 
@@ -56,7 +57,6 @@ In order to use the library you will need:
 
 ## Implementation details
 
-
 ### Specification Details
 
 Below is how an image is converted into a template and some of the r307 sensor's specs. 
@@ -79,7 +79,6 @@ Stuff sent to or from the sensor is in form of a packet. Fundametally, all the f
 * Another kind of packet, called an End packet can be sent in the event that multiple data packets are sent to the sensor. This packet helps to tell the sensor that the data it contains is the last batch / chunck of some big piece of data like a raw image.
 
   Also, all packets are sent and received via the UART communication protocol. The contents of any packet can only be sent 1 byte at a time for both the upper comuter(like an Arduino) and the sensor.
-
 
 ### ultraFinger Functions
 
