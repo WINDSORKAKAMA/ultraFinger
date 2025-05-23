@@ -77,9 +77,7 @@ Stuff sent to or from the sensor is in form of a packet. Fundametally, all the f
   Also, all packets are sent and received via the UART communication protocol. The contents of any packet can only be sent 1 byte at a time for both the upper comuter(like an Arduino) and the sensor.
 
 
-### Functions
-
-    Below are the different functions provided by the library
+### ultraFinger Functions
 
 ```C
 extern void setBaud()
