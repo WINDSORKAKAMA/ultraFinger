@@ -53,13 +53,31 @@ In order to use the library you will need:
 ## Implementation details
 
 
-### Specifications
+### Specification Details
 
-The r307 fingerprtint sensor
+Below is how an image is converted into a template and some of the r307 sensor's specs. 
+
+* The fingerprint sensor captures a fingerprint, called an image, from the user. This image is a bitmap imaage that is 73728 bytes big.
+* The bitmap image is placed in the image buffer which is an array in its RAM. Here, it can be compressed into a character file of size 256 bytes.
+* A character buffer in the sensor's RAM can be used to store character files or template files. There are two character buffers, each of size 512 bytes.
+* Character files can be joined together to make a template file, of size 512 bytes, which is the final "version" of an image. This can be stored in the non-volatile flash memory.
+* The non-volatile flash memory can hold up to 1000 templates.
+
+Visit the manuals in the "manuals" directory for more information on the r307 specs.
+
+### Communication Details
+
+Stuff sent to or from the sensor is in form of a packet. Fundametally, all the functions send and receive packets.
+
+* When the desired function is called, it sends a packet called a Command packet. Command packets contain a unique command telling the sensor to caryy out a specific action.
+* Afterword, the sensor sends a packet, called an Acknowledge packet. These contain a confirmation code and most contain some extra data which may be expected by the user.
+* In some cases the sensor may send or even receive a second packet only containing data, called a Data packet. This is most evident in functions like.
+* Another kind of packet, called an End packet can be sent in the event that multiple data packets are sent to the sensor. This packet helps to tell the sensor that the data it contains is the last batch / chunck of some big piece of data like a raw image.
+
+  Also, all packets are sent and received via the UART communication protocol. The contents of any packet can only be sent 1 byte at a time for both the upper comuter(like an Arduino) and the sensor.
 
 
-### Functions
-    Below are the different functions provided by the library
+### ultraFinger Functions
 
 ```C
 extern void setBaud()
@@ -159,12 +177,12 @@ Carries out precise matching of templates, one in character buffer 1 and the oth
 ```C
 extern void fingerLibraryEmpty();
 ```    
-Deletes all templates in the finger library 
+Deletes all templates in the finger library (aka flash library) 
 
 ```C
 extern void fingerLibrarySearch(uint8_t buffer_number, uint16_t start_address, uint16_t page_num);
 ```    
-Searches the whole finger library for the template that matches the one in the specified character buffer 
+Searches the whole finger library (aka flash library) for the template that matches the one in the specified character buffer 
 
 ```C
 extern void notepadWrite(uint8_t page_num, uint8_t(*data)[32]);
@@ -181,3 +199,11 @@ extern uint32_t generateRandomCode()
 ```
 Generates a random number from the sensor and return it to the computer 
 
+
+## Conclusion
+
+
+This library aims to provide a robust and flexible solution for working with fingerprint sensors in various applications. Whether you're building a cashless transaction system, a smart door lock, or any other project requiring fingerprint authentication, UltraFinger is designed to meet your needs.
+
+
+Feel free to contribute, report issues, or suggest features!
