@@ -1,7 +1,7 @@
 /*
  * ultraFinger – R307 Fingerprint Sensor Library
  * 
- * Copyright (c) 2025 John Terry
+ * Copyright (c) 2025 Kakama Windsor
  * Licensed under the BSD 3-Clause License.
  * 
  * See the LICENSE file for full terms.
