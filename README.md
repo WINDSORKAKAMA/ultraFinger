@@ -3,7 +3,7 @@
 </p>
 <p align="center">
     <a href="https://opensource.org/license/bsd-3-clause">
-        <img src="https://img.shields.io/badge/License-3--Clause_BSD-blue.svg" alt="Licence" />
+        <img src="https://img.shields.io/badge/License-BSD_3--Clause-blue.svg" alt="Licence" />
     </a>  
     <p align="center">An alternative r307 Fingerprint library for Arduino</p>
 </p>
