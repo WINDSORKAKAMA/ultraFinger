@@ -8,6 +8,11 @@
     <p align="center">An alternative r307 Fingerprint library for Arduino</p>
 </p>
 
+## Author
+
+Created by Kakama Windsor – windsorkakama@gmail.com  
+GitHub: [WINDSORKAKAMA](https://github.com/WINDSORKAKAMA)
+
 
 ## Yet another Fingerprint Library?
 
