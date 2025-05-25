@@ -114,10 +114,8 @@
                 uint16_t data_packet_size;
                 uint16_t baud_setting; 
             }contents;
-
-            struct{
-                uint8_t padding : 0;
-            }align[16];
+            
+            uint8_t padding[16];
 
         }system_parameter_store;
     }Fingerprint_Helper_t;
