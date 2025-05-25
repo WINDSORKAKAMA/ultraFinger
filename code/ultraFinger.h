@@ -98,7 +98,7 @@
     typedef class SoftwareSerial* SoftwareSerial_H;
 
     // global pointer to the SoftwareSerial object used by user
-    extern SoftwareSerial_H *mySerial;
+    extern SoftwareSerial_H mySerial;
 
     // return type of systemParameterRead(): information on the current values of the system parameters
     typedef struct Fingerprint_Helper_t{
@@ -115,7 +115,7 @@
                 uint16_t baud_setting; 
             }contents;
             
-            uint8_t padding[16];
+            uint8_t padding[16];    // Padding array (should never be accessed), to force the size to be 16-bytes 
 
         }system_parameter_store;
     }Fingerprint_Helper_t;
@@ -194,8 +194,9 @@
         extern uint32_t generateRandomCode();
     
     
-        /* NB: Do not use; Under construction */
-        extern void imageSend(uint8_t* input_image, uint32_t image_size);
+        /* NB: Do not define this macro until imageSend() is fully working */
+        #ifdef IMAGE_SEND_DONE
+            extern void imageSend(uint8_t* input_image, uint32_t image_size);
             
     };
 #endif
